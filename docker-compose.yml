@@ -1,5 +1,5 @@
 version: '3'
-name: rinha-backend-ftsuda
+
 services:
   api1: # API - Instância 01
     image: ftsuda/rinha-backend:1.0.0
@@ -17,7 +17,7 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "principal"
-      JDK_JAVA_OPTIONS: "-XX:+UseCompressedClassPointers -XX:+UseZGC -XX:+ZUncommit -XX:+UseDynamicNumberOfGCThreads -XX:-OmitStackTraceInFastThrow -XX:+OptimizeStringConcat -server -ea -XX:+UseContainerSupport -XX:MaxRAMPercentage=80 -XX:+HeapDumpOnOutOfMemoryError"
+      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseCompressedClassPointers -XX:+UseZGC -XX:+ZUncommit -XX:+UseDynamicNumberOfGCThreads -XX:-OmitStackTraceInFastThrow -XX:+OptimizeStringConcat -XX:+UseContainerSupport -XX:MaxRAMPercentage=80"
       DB_POOL_SIZE_INITIAL: "100"
       DB_POOL_SIZE_MAX: "100"
     deploy:
@@ -42,7 +42,7 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "secundaria"
-      JDK_JAVA_OPTIONS: "-XX:+UseCompressedClassPointers -XX:+UseZGC -XX:+ZUncommit -XX:+UseDynamicNumberOfGCThreads -XX:-OmitStackTraceInFastThrow -XX:+OptimizeStringConcat -server -ea -XX:+UseContainerSupport -XX:MaxRAMPercentage=80 -XX:+HeapDumpOnOutOfMemoryError"
+      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseCompressedClassPointers -XX:+UseZGC -XX:+ZUncommit -XX:+UseDynamicNumberOfGCThreads -XX:-OmitStackTraceInFastThrow -XX:+OptimizeStringConcat -XX:+UseContainerSupport -XX:MaxRAMPercentage=80"
       DB_POOL_SIZE_INITIAL: "100"
       DB_POOL_SIZE_MAX: "100"
     deploy:

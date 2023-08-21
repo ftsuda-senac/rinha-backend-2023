@@ -39,8 +39,12 @@ public class PessoaController {
 
     private static final Logger log = LoggerFactory.getLogger(PessoaController.class);
 
+    // TODO: Removendo camada Services pois é uma aplicação simples.
     private final PessoaRepository repository;
 
+    // TODO: Cache local simples para veritar ida ao BD em caso de apelidos já cadastrados
+    // Em cluster, não compartilha informações entre as instâncias, mas estatisticamente pode reduzir a carga ao BD
+    // Idealmente, deve ser um cache externo compartilhado (ex: Redis)
     private Set<String> apelidosUsados = new TreeSet<>();
 
     public PessoaController(PessoaRepository repository) {
