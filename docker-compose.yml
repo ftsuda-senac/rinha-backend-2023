@@ -1,4 +1,5 @@
 version: '3'
+name: rinha-backend-ftsuda
 services:
   api1: # API - Instância 01
     image: ftsuda/rinha-backend:1.0.0
