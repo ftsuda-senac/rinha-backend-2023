@@ -1,0 +1,27 @@
+{
+  "apelido": "fulano",
+  "nome": "Fulano da Silva",
+  "nascimento": "2023-08-19",
+  "stack": [
+    "Java",
+    "Javascript",
+    "HTML"
+  ]
+}
+
+{
+  "apelido": "ciclano",
+  "nome": "Ciclano de Souza",
+  "nascimento": "2023-08-19"
+}
+
+{
+  "apelido": "beltrana",
+  "nome": "Beltrana dos Santos",
+  "nascimento": "2023-08-19",
+  "stack": [
+    "Java",
+    "CSS",
+    "React"
+  ]
+}
