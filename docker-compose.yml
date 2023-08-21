@@ -1,7 +1,7 @@
 version: '3'
 services:
   api1: # API - Instância 01
-    image: ftsuda/rinha-backend:1
+    image: ftsuda/rinha-backend:1.0.0
     hostname: api1
     depends_on:
       - db
@@ -26,7 +26,7 @@ services:
           memory: '750MB'
 
   api2: # API - Instância 02
-    image: ftsuda/rinha-backend:1
+    image: ftsuda/rinha-backend:1.0.0
     hostname: api2
     depends_on:
       - db
