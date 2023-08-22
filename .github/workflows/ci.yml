@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: jar-artifact
-          path: ${{ github.workspace }}/my-app/target/*.jar
+          path: ${{ github.workspace }}/target/*.jar
           retention-days: 1
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v1
