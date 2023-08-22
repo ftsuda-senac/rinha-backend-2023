@@ -42,7 +42,7 @@ jobs:
           name: jar-artifact
           path: target/
       - name: Build Docker
-        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/rinha-backend:1.1.1
+        run: docker build . -t ${{secrets.DOCKERHUB_USERNAME}}/rinha-backend:1.1.1
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
