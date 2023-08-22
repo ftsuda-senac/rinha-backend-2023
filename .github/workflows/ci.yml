@@ -19,18 +19,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      - name: Bump jar version
-        id: bump
-        run: |
-          OLD_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          BUMP_MODE="none"
-          old="$OLD_VERSION"
-          parts=( ${old//./ } )
-          bv=$((parts[2] + 1))
-          NEW_VERSION="${parts[0]}.${parts[1]}.${bv}"
-          echo "pom.xml will be bumped from" $OLD_VERSION "to" $NEW_VERSION
-          mvn -q versions:set -DnewVersion="${NEW_VERSION}" --file $POMPATH/pom.xml
-          echo ::set-output name=jar_version::${NEW_VERSION}
       - name: Build with Maven
         run: mvn -B package --file pom.xml -DskipTests
       - run: |
@@ -53,10 +41,8 @@ jobs:
         with:
           name: jar-artifact
           path: target/
-      - run: |
-          echo ${{needs.build.outputs.jar_version}}
       - name: Build Docker
-        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/rinha-backend:${{needs.build.outputs.jar_version}} .
+        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/rinha-backend:1.1.1
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -64,7 +50,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
         run: |
-          docker push ${{secrets.DOCKERHUB_USERNAME}}/rinha-backend:${{needs.build.outputs.jar_version}}
+          docker push ${{secrets.DOCKERHUB_USERNAME}}/rinha-backend:1.1.1
   test:
     runs-on: ubuntu-209.04
     needs: build
