@@ -8,8 +8,14 @@ services:
       - db
     networks:
       - rinhanet
-    expose:
-      - "8080"
+    healthcheck:
+      test: curl -o /dev/null -s --retry 0 --head http://localhost:8080/contagem-pessoas || exit 1
+      interval: 15s
+      retries: 60
+      start_period: 30s
+      timeout: 5s
+    # expose:
+    #   - "8080"
     ports:
       - "8081:8080"
     ulimits:
@@ -25,8 +31,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '750MB'
+          cpus: '0.3'
+          memory: '1.1GB'
 
   api2: # API - Instância 02
     image: ftsuda/rinha-backend:1.1.0
@@ -35,8 +41,14 @@ services:
       - db
     networks:
       - rinhanet
-    expose:
-      - "8080"
+    healthcheck:
+      test: curl -o /dev/null -s --retry 0 --head http://localhost:8080/contagem-pessoas || exit 1
+      interval: 15s
+      retries: 60
+      start_period: 30s
+      timeout: 5s
+    # expose:
+    #   - "8080"
     ports:
       - "8082:8080"
     ulimits:
@@ -52,8 +64,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '750MB'
+          cpus: '0.3'
+          memory: '1.1GB'
 
   nginx: # Load Balancer
     image: nginx:latest
@@ -74,8 +86,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '500MB'
+          cpus: '0.2'
+          memory: '0.3GB'
 
   db: # Banco de dados
     image: postgres
@@ -86,12 +98,18 @@ services:
       POSTGRES_DB: "rinha"
       POSTGRES_USER: "rinha_user"
       POSTGRES_PASSWORD: "rinha_pwd"
-    expose:
-      - "5432"
+    # expose:
+    #   - "5432"
     ports:
       - "5434:5432"
     networks:
       - rinhanet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
     ulimits:
       nproc: 1000000
       nofile:
@@ -100,9 +118,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.75'
-          memory: '1GB'
+          cpus: '0.7'
+          memory: '0.5GB'
 networks:
   rinhanet:
-    # driver: bridge
-    driver: host
+    driver: bridge
