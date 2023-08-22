@@ -2,18 +2,19 @@ version: '3'
 
 services:
   api1: # API - Instância 01
-    image: ftsuda/rinha-backend:1.1.1
+    image: ftsuda/rinha-backend:1.1.2
     hostname: api1
     depends_on:
-      - db
+      db:
+        condition: 'service_healthy'
     networks:
       - rinhanet
-    healthcheck:
-      test: curl -o /dev/null -s --retry 0 --head http://localhost:8080/contagem-pessoas || exit 1
-      interval: 15s
-      retries: 60
-      start_period: 30s
-      timeout: 5s
+    # healthcheck:
+    #   test: curl -m 5 --silent --fail --request GET http://localhost:8081/contagem-pessoas | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
+    #   interval: 15s
+    #   retries: 60
+    #   start_period: 30s
+    #   timeout: 5s
     # expose:
     #   - "8080"
     ports:
@@ -35,18 +36,19 @@ services:
           memory: '1.1GB'
 
   api2: # API - Instância 02
-    image: ftsuda/rinha-backend:1.1.1
+    image: ftsuda/rinha-backend:1.1.2
     hostname: api2
     depends_on:
-      - db
+      db:
+        condition: 'service_healthy'
     networks:
       - rinhanet
-    healthcheck:
-      test: curl -o /dev/null -s --retry 0 --head http://localhost:8080/contagem-pessoas || exit 1
-      interval: 15s
-      retries: 60
-      start_period: 30s
-      timeout: 5s
+    # healthcheck:
+    #   test: curl -m 5 --silent --fail --request GET http://localhost:8082/contagem-pessoas | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
+    #   interval: 15s
+    #   retries: 60
+    #   start_period: 30s
+    #   timeout: 5s
     # expose:
     #   - "8080"
     ports:
@@ -74,6 +76,10 @@ services:
     depends_on:
       - api1
       - api2
+      # api1:
+      #   condition: 'service_healthy'
+      # api2:
+      #   condition: 'service_healthy'
     networks:
       - rinhanet
     ports:
