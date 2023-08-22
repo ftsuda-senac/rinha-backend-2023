@@ -42,7 +42,7 @@ jobs:
           name: jar-artifact
           path: target/
       - name: Build Docker
-        run: docker build . -t ftsuda/rinha-backend:${{needs.build.outputs.jar_version}}
+        run: docker build -t ftsuda/rinha-backend:${{needs.build.outputs.jar_version}} ,
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
