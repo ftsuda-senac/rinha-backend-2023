@@ -13,4 +13,4 @@ CREATE TABLE pessoa
     CONSTRAINT uk_apelido UNIQUE (apelido)
 );
 
-CREATE INDEX idx_busca ON pessoa USING gist (nome gist_trgm_ops, apelido gist_trgm_ops, stack_db gist_trgm_ops);
+CREATE INDEX CONCURRENTLY idx_busca ON pessoa USING gin ((nome || ';' || apelido || ';' || stack_db) gin_trgm_ops);

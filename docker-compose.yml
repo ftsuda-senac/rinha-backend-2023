@@ -2,7 +2,7 @@ version: '3'
 
 services:
   api1: # API - Instância 01
-    image: ftsuda/rinha-backend:1.1.2
+    image: ftsuda/rinha-backend:1.1.4
     hostname: api1
     depends_on:
       db:
@@ -26,7 +26,7 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "principal"
-      JDK_JAVA_OPTIONS: "-server -ea -Xms1g -Xmx1g -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
+      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseParallelGC -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
       DB_URL: "r2dbc:postgresql://db:5432/rinha"
       DB_USER: "rinha_user"
       DB_PWD: "rinha_pwd"
@@ -39,7 +39,7 @@ services:
           memory: '1.1GB'
 
   api2: # API - Instância 02
-    image: ftsuda/rinha-backend:1.1.2
+    image: ftsuda/rinha-backend:1.1.4
     hostname: api2
     depends_on:
       db:
@@ -63,7 +63,7 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "secundaria"
-      JDK_JAVA_OPTIONS: "-server -ea -Xms1g -Xmx1g -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
+      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseParallelGC -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
       DB_URL: "r2dbc:postgresql://db:5432/rinha"
       DB_USER: "rinha_user"
       DB_PWD: "rinha_pwd"

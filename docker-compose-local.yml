@@ -30,7 +30,7 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "principal"
-      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
+      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseParallelGC -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
       DB_URL: "r2dbc:postgresql://db:5432/rinha"
       DB_USER: "rinha_user"
       DB_PWD: "rinha_pwd"
@@ -69,7 +69,7 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "secundaria"
-      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
+      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseParallelGC -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
       DB_URL: "r2dbc:postgresql://db:5432/rinha"
       DB_USER: "rinha_user"
       DB_PWD: "rinha_pwd"
