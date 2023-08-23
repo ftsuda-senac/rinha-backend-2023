@@ -1,7 +1,7 @@
 package ftsuda.rinhabackend.controller;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +9,8 @@ import org.springframework.core.codec.DecodingException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,11 +47,24 @@ public class PessoaController {
     // TODO: Cache local simples para veritar ida ao BD em caso de apelidos já cadastrados
     // Em cluster, não compartilha informações entre as instâncias, mas estatisticamente pode reduzir a carga ao BD
     // Idealmente, deve ser um cache externo compartilhado (ex: Redis)
-    private Set<String> apelidosUsados = new TreeSet<>();
+    private Set<String> apelidosUsados = new HashSet<>();
 
     public PessoaController(PessoaRepository repository) {
         this.repository = repository;
     }
+
+    // Scheduled Não funciona em fluxo reativo
+    // Ver https://joao-dartora.medium.com/entendendo-mais-a-fundo-os-schedulers-do-spring-webflux-8953cfd89b2
+    // https://stackoverflow.com/questions/54093132/scheduled-and-spring-webflux
+    // @Scheduled(fixedRate = 5000)
+    // @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    // public Mono<Void> updateCache() {
+    // repository.findAllApelidos().collectList().subscribe((result) -> {
+    // log.debug("*** Updating local cache");
+    // apelidosUsados.addAll(result);
+    // });
+    // return Mono.empty();
+    // }
 
     @PostMapping
     // @ResponseStatus(HttpStatus.CREATED)
@@ -69,13 +84,15 @@ public class PessoaController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public Mono<ResponseEntity<Pessoa>> findById(@PathVariable UUID id) {
         return repository.findById(id).map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @GetMapping
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public Flux<Pessoa> search(@RequestParam("t") String t) {
-        return repository.findBySearchTerm(t.toLowerCase());
+        return repository.findBySearchTerm(t);
     }
 
     /**
@@ -87,7 +104,7 @@ public class PessoaController {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public Mono<Void> handlePostError(Exception ex) {
-        log.error(ex.getMessage());
+        // log.error(ex.getMessage());
         return Mono.empty();
     }
 
@@ -100,7 +117,7 @@ public class PessoaController {
     @ExceptionHandler({WebExchangeBindException.class, ValidationException.class, DecodingException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Mono<Void> handleInvalidRequestError(Exception ex) {
-        log.error(ex.getMessage());
+        // log.error(ex.getMessage());
         return Mono.empty();
     }
 }

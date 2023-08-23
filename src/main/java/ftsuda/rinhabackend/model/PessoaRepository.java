@@ -12,4 +12,7 @@ public interface PessoaRepository extends R2dbcRepository<Pessoa, UUID> {
     @Query("SELECT DISTINCT * FROM pessoa WHERE nome ILIKE '%'||:termoBusca||'%' OR apelido ILIKE '%'||:termoBusca||'%' OR stack_db ILIKE '%'||:termoBusca||'%' LIMIT 50")
     Flux<Pessoa> findBySearchTerm(String termoBusca);
 
+    @Query("SELECT DISTINCT apelido FROM pessoa")
+    Flux<String> findAllApelidos();
+
 }

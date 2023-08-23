@@ -26,9 +26,12 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "principal"
-      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseCompressedClassPointers -XX:+UseZGC -XX:+ZUncommit -XX:+UseDynamicNumberOfGCThreads -XX:-OmitStackTraceInFastThrow -XX:+OptimizeStringConcat -XX:+UseContainerSupport -XX:MaxRAMPercentage=80"
-      DB_POOL_SIZE_INITIAL: "100"
-      DB_POOL_SIZE_MAX: "100"
+      JDK_JAVA_OPTIONS: "-server -ea -Xms1g -Xmx1g -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
+      DB_URL: "r2dbc:postgresql://db:5432/rinha"
+      DB_USER: "rinha_user"
+      DB_PWD: "rinha_pwd"
+      DB_POOL_INITIAL_SIZE: "100"
+      DB_POOL_MAX_SIZE: "100"
     deploy:
       resources:
         limits:
@@ -60,9 +63,12 @@ services:
         hard: 1000000
     environment:
       INSTANCIA_ROLE: "secundaria"
-      JDK_JAVA_OPTIONS: "-server -ea -XX:+UseCompressedClassPointers -XX:+UseZGC -XX:+ZUncommit -XX:+UseDynamicNumberOfGCThreads -XX:-OmitStackTraceInFastThrow -XX:+OptimizeStringConcat -XX:+UseContainerSupport -XX:MaxRAMPercentage=80"
-      DB_POOL_SIZE_INITIAL: "100"
-      DB_POOL_SIZE_MAX: "100"
+      JDK_JAVA_OPTIONS: "-server -ea -Xms1g -Xmx1g -XX:+UseContainerSupport -XX:MaxRAMPercentage=90"
+      DB_URL: "r2dbc:postgresql://db:5432/rinha"
+      DB_USER: "rinha_user"
+      DB_PWD: "rinha_pwd"
+      DB_POOL_INITIAL_SIZE: "100"
+      DB_POOL_MAX_SIZE: "100"
     deploy:
       resources:
         limits:
@@ -111,7 +117,7 @@ services:
     networks:
       - rinhanet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "pg_isready -d rinha -U rinha_user"]
       interval: 5s
       timeout: 5s
       retries: 20
