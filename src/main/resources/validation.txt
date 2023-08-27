@@ -25,3 +25,5 @@
     "React"
   ]
 }
+
+Testes via CURL: curl -v -H "Content-type: application/json" -X POST -d '{ "apelido": "jao", "nome": "Jão de Dus", "nascimento": "2023-08-19" }' http://localhost:9999/pessoas

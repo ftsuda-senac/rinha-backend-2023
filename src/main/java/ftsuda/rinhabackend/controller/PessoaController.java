@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Isolation;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
+import ftsuda.rinhabackend.PessoaCache;
 import ftsuda.rinhabackend.model.Pessoa;
 import ftsuda.rinhabackend.model.PessoaRepository;
 import jakarta.validation.Valid;
@@ -44,13 +47,16 @@ public class PessoaController {
     // TODO: Removendo camada Services pois é uma aplicação simples.
     private final PessoaRepository repository;
 
+    private final ReactiveRedisOperations<String, PessoaCache> apelidosOps;
+
     // TODO: Cache local simples para veritar ida ao BD em caso de apelidos já cadastrados
     // Em cluster, não compartilha informações entre as instâncias, mas estatisticamente pode reduzir a carga ao BD
     // Idealmente, deve ser um cache externo compartilhado (ex: Redis)
     private Set<String> apelidosUsados = new HashSet<>();
 
-    public PessoaController(PessoaRepository repository) {
+    public PessoaController(PessoaRepository repository, ReactiveRedisOperations<String, PessoaCache> apelidosOps) {
         this.repository = repository;
+        this.apelidosOps = apelidosOps;
     }
 
     // Scheduled Não funciona em fluxo reativo
@@ -68,14 +74,21 @@ public class PessoaController {
 
     @PostMapping
     // @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<Pessoa>> save(@Valid @RequestBody Pessoa pessoa, UriComponentsBuilder ucb) {
-        if (apelidosUsados.contains(pessoa.getApelido())) {
-            return Mono.just(ResponseEntity.unprocessableEntity().build());
-        }
-        return repository.save(pessoa).map(p -> {
-            apelidosUsados.add(p.getApelido());
-            return ResponseEntity.created(ucb.pathSegment("pessoas", "{id}").buildAndExpand(p.getId().toString()).toUri()).body(p);
+    public Mono<ResponseEntity<Void>> save(@Valid @RequestBody Pessoa pessoa, UriComponentsBuilder ucb) {
+        String apelido = pessoa.getApelido();
+        apelidosOps.opsForValue().get(apelido).subscribe((cache) -> cache.getApelido()).
+
+        return cacheApelidos.opsForValue().get(CACHE_KEY).map(cachedApelido -> {
+            if (cachedApelido != null) {
+                return Mono.just(ResponseEntity.unprocessableEntity().build());
+            }
+            return repository.save(pessoa).map(p -> {
+                cacheApelidos.opsForValue().set(apelido, apelido);
+                return ResponseEntity
+                        .created(ucb.pathSegment("pessoas", "{id}").buildAndExpand(p.getId().toString()).toUri()).body(p);
+            });
         });
+
     }
 
     @Deprecated
