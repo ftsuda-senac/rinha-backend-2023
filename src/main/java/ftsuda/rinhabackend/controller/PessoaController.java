@@ -1,17 +1,14 @@
 package ftsuda.rinhabackend.controller;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ftsuda.rinhabackend.PessoaCache;
 import ftsuda.rinhabackend.model.Pessoa;
 import ftsuda.rinhabackend.model.PessoaRepository;
+import ftsuda.rinhabackend.redis.PessoaCache;
+import ftsuda.rinhabackend.redis.PessoaCacheRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import reactor.core.publisher.Flux;
@@ -47,16 +45,11 @@ public class PessoaController {
     // TODO: Removendo camada Services pois é uma aplicação simples.
     private final PessoaRepository repository;
 
-    private final ReactiveRedisOperations<String, PessoaCache> apelidosOps;
+    private final PessoaCacheRepository cacheRepository;
 
-    // TODO: Cache local simples para veritar ida ao BD em caso de apelidos já cadastrados
-    // Em cluster, não compartilha informações entre as instâncias, mas estatisticamente pode reduzir a carga ao BD
-    // Idealmente, deve ser um cache externo compartilhado (ex: Redis)
-    private Set<String> apelidosUsados = new HashSet<>();
-
-    public PessoaController(PessoaRepository repository, ReactiveRedisOperations<String, PessoaCache> apelidosOps) {
+    public PessoaController(PessoaRepository repository, PessoaCacheRepository cacheRepository) {
         this.repository = repository;
-        this.apelidosOps = apelidosOps;
+        this.cacheRepository = cacheRepository;
     }
 
     // Scheduled Não funciona em fluxo reativo
@@ -74,21 +67,18 @@ public class PessoaController {
 
     @PostMapping
     // @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<Void>> save(@Valid @RequestBody Pessoa pessoa, UriComponentsBuilder ucb) {
+    // @Transactional(timeout = 30, isolation = Isolation.DEFAULT, propagation = Propagation.REQUIRED)
+    public Mono<ResponseEntity<Pessoa>> save(@Valid @RequestBody Pessoa pessoa, UriComponentsBuilder ucb) {
         String apelido = pessoa.getApelido();
-        apelidosOps.opsForValue().get(apelido).subscribe((cache) -> cache.getApelido()).
-
-        return cacheApelidos.opsForValue().get(CACHE_KEY).map(cachedApelido -> {
-            if (cachedApelido != null) {
-                return Mono.just(ResponseEntity.unprocessableEntity().build());
-            }
-            return repository.save(pessoa).map(p -> {
-                cacheApelidos.opsForValue().set(apelido, apelido);
-                return ResponseEntity
-                        .created(ucb.pathSegment("pessoas", "{id}").buildAndExpand(p.getId().toString()).toUri()).body(p);
-            });
+        if (cacheRepository.existsById(apelido)) {
+            log.debug("Apelido {} encontrado em cache", apelido);
+            return Mono.just(ResponseEntity.unprocessableEntity().build());
+        }
+        return repository.save(pessoa).map(p -> {
+            cacheRepository.save(new PessoaCache(apelido));
+            return ResponseEntity
+                    .created(ucb.pathSegment("pessoas", "{id}").buildAndExpand(p.getId().toString()).toUri()).body(p);
         });
-
     }
 
     @Deprecated
@@ -97,13 +87,13 @@ public class PessoaController {
     }
 
     @GetMapping("/{id}")
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    // @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED, propagation = Propagation.NEVER)
     public Mono<ResponseEntity<Pessoa>> findById(@PathVariable UUID id) {
         return repository.findById(id).map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    // @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED, propagation = Propagation.NEVER)
     public Flux<Pessoa> search(@RequestParam("t") String t) {
         return repository.findBySearchTerm(t);
     }

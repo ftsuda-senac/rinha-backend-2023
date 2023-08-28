@@ -8,18 +8,19 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 import org.springframework.web.reactive.config.EnableWebFlux;
 import io.r2dbc.spi.ConnectionFactory;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import redis.embedded.RedisServer;
 
 @EnableWebFlux
 // @EnableScheduling
+@EnableR2dbcRepositories(basePackages = {"ftsuda.rinhamvc.model"})
+@EnableRedisRepositories(basePackages = {"ftsuda.rinhamvc.redis"})
 @SpringBootApplication
 public class RinhaBackendApplication {
 
@@ -28,25 +29,11 @@ public class RinhaBackendApplication {
     @Value("${spring.profiles.active:}")
     private String activeProfile;
 
-    private RedisServer devRedisServer;
-
-    @PostConstruct
-    public void onInit() {
-        if ("dev".equals(activeProfile)) {
-            try {
-                devRedisServer = RedisServer.builder().port(6370).setting("maxmemory 128M").build();
-            } catch (Exception ex) {
-                log.error("Error starting dev Redis server", ex);
-            }
-        }
-    }
-
-    @PreDestroy
-    public void onDestroy() {
-        if (devRedisServer != null) {
-            devRedisServer.stop();
-        }
-    }
+    // https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#redis:support:cache-abstraction
+    // @Bean
+    // RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+    // return RedisCacheManager.create(connectionFactory);
+    // }
 
     // https://stackoverflow.com/a/71699383
     // https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#redis:reactive:string
@@ -69,7 +56,6 @@ public class RinhaBackendApplication {
             log.info("Creating db schema");
             ResourceDatabasePopulator resource = new ResourceDatabasePopulator(new ClassPathResource("schema.sql"));
             initializer.setDatabasePopulator(resource);
-
         }
         return initializer;
     }

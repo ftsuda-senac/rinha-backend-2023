@@ -6,21 +6,18 @@
 # https://github.com/andr3marra/rinha-de-backend-2023-q3/blob/main/participantes/grupo-2a/nginx.conf
 
 worker_processes auto;
-
+worker_rlimit_nofile 1000000;
 events {
     use epoll;
-    # multi_accept on;
+    multi_accept on;
     worker_connections 5000;
+    accept_mutex on;
 }
 http {
-    proxy_read_timeout 3m;
-    proxy_connect_timeout 3m;
-    proxy_send_timeout 3m;
     access_log off;
     error_log /dev/null emerg;
     upstream api {
         keepalive 1000;
-        keepalive_requests 100000;
         server api1:8080;
         server api2:8080;
     }

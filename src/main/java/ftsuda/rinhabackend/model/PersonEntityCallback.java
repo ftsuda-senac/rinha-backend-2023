@@ -25,7 +25,7 @@ public class PersonEntityCallback implements AfterConvertCallback<Pessoa>, Befor
         if (StringUtils.isNotBlank(entity.getStackDb())) {
             entity.setStack(Arrays.asList(entity.getStackDb().split(STACK_SEPARATOR)));
         }
-        log.debug(entity.toString());
+        // log.debug(entity.toString());
         return Mono.just(entity);
     }
 
@@ -37,7 +37,7 @@ public class PersonEntityCallback implements AfterConvertCallback<Pessoa>, Befor
         if (entity.getStack() != null && entity.getStack().size() > 0) {
             entity.setStackDb(String.join(STACK_SEPARATOR, entity.getStack()));
         }
-        log.debug(entity.toString());
+        // log.debug(entity.toString());
         return Mono.just(entity);
     }
 
