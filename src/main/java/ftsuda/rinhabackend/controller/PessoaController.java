@@ -34,6 +34,7 @@ import reactor.core.publisher.Mono;
 // https://www.bezkoder.com/spring-boot-r2dbc-postgresql/
 // https://gokhana.dev/reactive-programming-with-spring-webflux/
 // https://reflectoring.io/getting-started-with-spring-webflux/
+// https://daasrattale.medium.com/hands-on-practice-with-reactive-spring-with-redis-cache-and-docker-support-4d0bc27f1e54
 
 @RestController
 @RequestMapping("/pessoas")
